@@ -62,22 +62,31 @@ public :
 
 	}
 
-
 	bool contains(Point2D point){
 		//that checks if a point is fully inside this bounding box.
-		return true;
+
+		if(a.x >= point.x && a.y <= point.y && b.x <= point.x && b.y >= point.y){
+			return true;
+		}
+		return false;
 	}
 
 	bool inside(BoundingBox boundingBox){
 		//that checks if the bounding box itself is fully inside
 		//another bounding box.
-		return true;
+		if(contains(boundingBox.a) && contains(boundingBox.a)){
+			return true;
+		}
+		return false;
 	}
 
 	bool intersect(BoundingBox boundingBox){
 		//that checks if the bounding box itself intersects
 		//with another bounding box.
-		return true;
+		if(contains(boundingBox.a) || contains(boundingBox.a)){
+			return true;
+		}
+		return false;
 	}
 
 
@@ -108,7 +117,6 @@ public:
 class KdTree{
 private:
 	//a private pointer to a kdnode (the root node of the kD-tree)
-	KDNode * node;
 	int depth=0;
 
 	//a private method reportSubtree(kdnode* n) that returns the set of all
@@ -119,7 +127,9 @@ private:
 	}
 
 public:
+	KDNode * node;
 	//a public method build(P) that builds the kD-tree from a set P of (2D) points.
+
 	KDNode build(vector<Point2D> p){
 		KDNode newNode;
 		newNode.splitDimension=depth;
@@ -159,6 +169,10 @@ public:
 		//https://stackoverflow.com/questions/9811235/best-way-to-split-a-vector-into-two-smaller-arrays
 		vector<Point2D> split_lo(p.begin(), p.begin() + median);
 		vector<Point2D> split_hi(p.begin() + median, p.end());
+		if(p.size()%2!=0){
+			split_hi.erase(split_hi.begin());
+		}
+
 		if(split_lo.size()>0){
 			KDNode leftNode=build(split_lo);
 			newNode.left = &leftNode;
@@ -173,9 +187,43 @@ public:
 
 	//a public method search(boundingbox range) that performs a range search
 	//on the kD-tree and returns a set of (2D) points.
-	vector<Point2D> search(BoundingBox range){
-	vector<Point2D> list;
-	return list;
+	vector<Point2D> search(BoundingBox range,KDNode * sNode){
+		KDNode searchNode=*sNode;
+		vector<Point2D> list;
+
+		if(searchNode.leaf){
+			list.push_back(searchNode.point);
+			return list;
+		}
+
+		if (range.inside(searchNode.left->range)){
+			//07 ReportSubtree(root.left);
+			cout << "inside left" << endl;
+		}
+
+		if (range.intersect(searchNode.left->range)){
+			//root.left.bbox intersects R) then
+			//SearchkDTree(root.left, R)
+			cout << "intersect" << endl;
+			search(range,searchNode.left);
+		}
+
+		if (range.inside(searchNode.right->range)){
+			//(root.right.bbox is fully contained in R) then
+			//ReportSubtree(root.right);
+			cout << "inside right" << endl;
+		}
+
+		if (range.intersect(searchNode.right->range)){
+			//else if (root.right.bbox intersects R) then
+			//SearchkDTree(root.right, R)
+			cout << "intersect right" << endl;
+			search(range,searchNode.right);
+		}
+
+
+
+		return list;
 	}
 
 };
@@ -190,8 +238,7 @@ int main() {
 	cout << "Debug_1:" << finalCommand << endl;
 	KdTree tree;
 	tree.build(pointList);
-	tree.search(bb);
-
+	tree.search(bb,tree.node);
 }
 
 void GetPointList(vector<Point2D> &pointList,BoundingBox &bb, string &finalCommand){
