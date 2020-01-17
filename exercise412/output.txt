@@ -1,0 +1,15 @@
+Debug_1:PRINT
+ _0->x:4 y:4 _1->x:2 y:4 _2->x:3.176 y:2 _3->x:0.5 y:0.5
+Arrays median:2
+ _0->x:4 y:4 _1->x:2 y:4
+Arrays median:1
+ _0->x:4 y:4
+Leaf
+ _0->x:2 y:4
+Leaf
+ _0->x:3.176 y:2 _1->x:0.5 y:0.5
+Arrays median:1
+ _0->x:3.176 y:2
+Leaf
+ _0->x:0.5 y:0.5
+Leaf
