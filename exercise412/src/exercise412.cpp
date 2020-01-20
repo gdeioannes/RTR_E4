@@ -74,7 +74,7 @@ public :
 	bool inside(BoundingBox boundingBox){
 		//that checks if the bounding box itself is fully inside
 		//another bounding box.
-		if(contains(boundingBox.a) && contains(boundingBox.a)){
+		if(contains(boundingBox.a) && contains(boundingBox.b)){
 			return true;
 		}
 		return false;
@@ -83,7 +83,7 @@ public :
 	bool intersect(BoundingBox boundingBox){
 		//that checks if the bounding box itself intersects
 		//with another bounding box.
-		if(contains(boundingBox.a) || contains(boundingBox.a)){
+		if(contains(boundingBox.a) || contains(boundingBox.b)){
 			return true;
 		}
 		return false;
@@ -220,8 +220,6 @@ public:
 			cout << "intersect right" << endl;
 			search(range,searchNode.right);
 		}
-
-
 
 		return list;
 	}
