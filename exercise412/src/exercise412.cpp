@@ -10,6 +10,7 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <algorithm>
 
 using namespace std;
 
@@ -64,8 +65,7 @@ public :
 
 	bool contains(Point2D point){
 		//that checks if a point is fully inside this bounding box.
-
-		if(a.x >= point.x && a.y <= point.y && b.x <= point.x && b.y >= point.y){
+		if(a.x <= point.x && a.y >= point.y && b.x >= point.x && b.y <= point.y){
 			return true;
 		}
 		return false;
@@ -89,9 +89,8 @@ public :
 		return false;
 	}
 
-
-	void print(string text){
-		cout << text << endl;
+	void printRange(){
+		cout << " a:" << " x->"<< a.x << " y->"<< a.y << " b:" << " x->" << b.x << " y->"<< b.y << endl;
 	}
 
 };
@@ -112,13 +111,18 @@ public:
 	//A range of type boundingbox that stores its corresponding bounds (and
 	//implicitly the bounds of its subtree).
 	BoundingBox range;
+
+	//Debug purpose
+	void printPoint(){
+		cout << " x->"<< point.x << " y->"<< point.y << endl;
+	}
 };
 
 class KdTree{
 private:
+	KDNode * node;
 	//a private pointer to a kdnode (the root node of the kD-tree)
 	int depth=0;
-
 	//a private method reportSubtree(kdnode* n) that returns the set of all
 	//(2D) points which are stored in the leaves of the subtree.
 	vector<KDNode> reportSubtree(KDNode * n){
@@ -127,11 +131,13 @@ private:
 	}
 
 public:
-	KDNode * node;
 	//a public method build(P) that builds the kD-tree from a set P of (2D) points.
 
 	KDNode build(vector<Point2D> p){
 		KDNode newNode;
+		if(depth==0){
+			node=&newNode;
+		}
 		newNode.splitDimension=depth;
 		if(depth % 2 != 0){
 			sort(p.begin(),p.end(),sort_by_x());
@@ -141,7 +147,7 @@ public:
 
 		//increase depth for the next node
 		depth++;
-
+		cout << "Cr DEPTH->" << depth << endl;
 		//Print Points in each node creation
 		for(int i=0;i<p.size();i++){
 			cout << " _" << i << "->" << "x:" << p[i].x << " y:" << p[i].y;
@@ -157,10 +163,6 @@ public:
 			newNode.leaf=false;
 		}
 
-		//Set Range of the bounding bos
-		newNode.range.a=p[0];
-		newNode.range.b=p[p.size()-1];
-
 		//AVG to split
 		int median=p.size()/2;
 
@@ -173,55 +175,73 @@ public:
 			split_hi.erase(split_hi.begin());
 		}
 
+		//Set Range of the bounding box, by now arranging by x and Y to get min and max on each
+		//array, this is n(log n) by quick sort
+		sort(p.begin(),p.end(),sort_by_x());
+		newNode.range.a.x=p[0].x;
+		newNode.range.b.x=p[p.size()-1].x;
+		sort(p.begin(),p.end(),sort_by_y());
+		newNode.range.a.y=p[p.size()-1].y;
+		newNode.range.b.y=p[0].y;
+
 		if(split_lo.size()>0){
 			KDNode leftNode=build(split_lo);
 			newNode.left = &leftNode;
 		}
 		if(split_hi.size()>0){
 			KDNode rightNode=build(split_hi);
-			newNode.left = &rightNode;
+			newNode.right = &rightNode;
 		}
-
 		return newNode;
 	}
 
 	//a public method search(boundingbox range) that performs a range search
 	//on the kD-tree and returns a set of (2D) points.
-	vector<Point2D> search(BoundingBox range,KDNode * sNode){
+	void search(BoundingBox range,KDNode * sNode){
 		KDNode searchNode=*sNode;
-		vector<Point2D> list;
+		cout << endl;
+		cout << "DEPTH->" << searchNode.splitDimension << endl;
+		cout << "BEGIN SEARCH RANGE" << endl;
+		cout << "SEARCH RANGE->";
+		range.printRange();
+		cout << "NODE RANGE->";
+		node->range.printRange();
+		cout << "POINT NODE->";
+		node->printPoint();
 
 		if(searchNode.leaf){
-			list.push_back(searchNode.point);
-			return list;
+			if(range.contains(node->point)){
+				cout << "Leaft x->" << searchNode.point.x << " y->"<< searchNode.point.y;
+			}
+		}else{
+			if(range.inside(searchNode.range)){
+				//07 ReportSubtree(root.left);
+				cout << "inside report sub tree" << endl;
+			}else{
+				if(range.inside(searchNode.left->range)){
+					//07 ReportSubtree(root.left);
+					cout << "inside report sub tree left" << endl;
+				}else if (range.intersect(searchNode.left->range)){
+					//root.left.bbox intersects R) then
+					//SearchkDTree(root.left, R)
+					cout << "intersect Left" << endl;
+					search(range,searchNode.left);
+				}
+				if(range.inside(searchNode.right->range)){
+					//07 ReportSubtree(root.left);
+					cout << "inside report sub tree right" << endl;
+				}else if (range.intersect(searchNode.right->range)){
+					//else if (root.right.bbox intersects R) then
+					//SearchkDTree(root.right, R)
+					cout << "intersect right" << endl;
+					search(range,searchNode.right);
+				}
+			}
 		}
+	}
 
-		if (range.inside(searchNode.left->range)){
-			//07 ReportSubtree(root.left);
-			cout << "inside left" << endl;
-		}
-
-		if (range.intersect(searchNode.left->range)){
-			//root.left.bbox intersects R) then
-			//SearchkDTree(root.left, R)
-			cout << "intersect" << endl;
-			search(range,searchNode.left);
-		}
-
-		if (range.inside(searchNode.right->range)){
-			//(root.right.bbox is fully contained in R) then
-			//ReportSubtree(root.right);
-			cout << "inside right" << endl;
-		}
-
-		if (range.intersect(searchNode.right->range)){
-			//else if (root.right.bbox intersects R) then
-			//SearchkDTree(root.right, R)
-			cout << "intersect right" << endl;
-			search(range,searchNode.right);
-		}
-
-		return list;
+	void search(BoundingBox range){
+		search(range,node);
 	}
 
 };
@@ -236,7 +256,7 @@ int main() {
 	cout << "Debug_1:" << finalCommand << endl;
 	KdTree tree;
 	tree.build(pointList);
-	tree.search(bb,tree.node);
+	tree.search(bb);
 }
 
 void GetPointList(vector<Point2D> &pointList,BoundingBox &bb, string &finalCommand){

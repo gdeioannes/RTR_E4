@@ -1,15 +1,28 @@
 Debug_1:PRINT
- _0->x:4 y:4 _1->x:2 y:4 _2->x:3.176 y:2 _3->x:1 y:1 _4->x:0.5 y:0.5
+Cr DEPTH->1
+ _0->x:4 y:4 _1->x:2 y:4 _2->x:3.176 y:2 _3->x:0.5 y:0.5
 Arrays median:2
+Cr DEPTH->2
  _0->x:4 y:4 _1->x:2 y:4
 Arrays median:1
+Cr DEPTH->3
  _0->x:4 y:4
 Leaf
+Cr DEPTH->4
  _0->x:2 y:4
 Leaf
- _0->x:1 y:1 _1->x:0.5 y:0.5
+Cr DEPTH->5
+ _0->x:3.176 y:2 _1->x:0.5 y:0.5
 Arrays median:1
- _0->x:1 y:1
+Cr DEPTH->6
+ _0->x:3.176 y:2
 Leaf
+Cr DEPTH->7
  _0->x:0.5 y:0.5
 Leaf
+
+DEPTH->0
+BEGIN SEARCH RANGE
+SEARCH RANGE-> a: x->0 y->1.5 b: x->4 y->4
+NODE RANGE-> a: x->4 y->0.5 b: x->0.5 y->4
+POINT NODE-> x->0 y->0
