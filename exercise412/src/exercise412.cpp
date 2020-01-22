@@ -36,7 +36,7 @@ struct sort_by_x
 {
     inline bool operator() (const Point2D& struct1, const Point2D& struct2)
     {
-        return (struct1.x > struct2.x);
+        return (struct1.x < struct2.x);
     }
 };
 
@@ -44,7 +44,7 @@ struct sort_by_y
 {
     inline bool operator() (const Point2D& struct1, const Point2D& struct2)
     {
-        return (struct1.y > struct2.y);
+        return (struct1.y < struct2.y);
     }
 };
 
@@ -65,7 +65,23 @@ public :
 
 	bool contains(Point2D point){
 		//that checks if a point is fully inside this bounding box.
-		if(a.x <= point.x && a.y >= point.y && b.x >= point.x && b.y <= point.y){
+		float maxX,maxY,minX,minY;
+		if(a.x>b.x){
+			maxX=a.x;
+			minX=b.x;
+		}else{
+			maxX=b.x;
+			minX=a.x;
+		}
+		if(a.y>b.y){
+			maxY=a.y;
+			minY=b.y;
+		}else{
+			maxY=b.y;
+			minY=a.y;
+		}
+
+		if(maxX >= point.x && maxY >= point.y && minX <= point.x && minY <= point.y){
 			return true;
 		}
 		return false;
@@ -83,7 +99,7 @@ public :
 	bool intersect(BoundingBox boundingBox){
 		//that checks if the bounding box itself intersects
 		//with another bounding box.
-		if(contains(boundingBox.a) || contains(boundingBox.b)){
+		if(contains(boundingBox.a) || contains(boundingBox.b) || boundingBox.contains(a) || boundingBox.contains(b)){
 			return true;
 		}
 		return false;
@@ -120,9 +136,8 @@ public:
 
 class KdTree{
 private:
-	KDNode * node;
+	KDNode* node;
 	//a private pointer to a kdnode (the root node of the kD-tree)
-	int depth=0;
 	//a private method reportSubtree(kdnode* n) that returns the set of all
 	//(2D) points which are stored in the leaves of the subtree.
 	vector<KDNode> reportSubtree(KDNode * n){
@@ -130,69 +145,75 @@ private:
 		return list;
 	}
 
+	KDNode* build(vector<Point2D> p,int dim){
+			KDNode* newNode=new KDNode;
+			if(dim==0){
+				node=newNode;
+			}
+
+			if(newNode->splitDimension % 2 == 0){
+				sort(p.begin(),p.end(),sort_by_x());
+			}else{
+				sort(p.begin(),p.end(),sort_by_y());
+			}
+
+			//increase depth for the next node
+			newNode->splitDimension=dim;
+			cout << "Cr DEPTH->" << newNode->splitDimension << endl;
+
+			//Print Points in each node creation
+			for(int i=0;i<p.size();i++){
+				cout << " _" << i << "->" << "x:" << p[i].x << " y:" << p[i].y;
+			}
+			cout << endl;
+
+			if(p.size()==1){
+				newNode->leaf=true;
+				newNode->point=p[0];
+				cout << "Leaf" << endl;
+				return newNode;
+			}else{
+				newNode->leaf=false;
+			}
+
+			//AVG to split
+			int median=p.size()/2;
+
+			cout << "Arrays median:" << median << endl;
+
+			//https://stackoverflow.com/questions/9811235/best-way-to-split-a-vector-into-two-smaller-arrays
+			vector<Point2D> split_lo(p.begin(), p.begin() + median);
+			vector<Point2D> split_hi(p.begin() + median, p.end());
+			if(p.size()%2!=0){
+				split_hi.erase(split_hi.begin());
+			}
+
+			//Set Range of the bounding box, by now arranging by x and Y to get min and max on each
+			//array, this is n(log n) by quick sort
+			sort(p.begin(),p.end(),sort_by_x());
+			newNode->range.a.x=p[0].x;
+			newNode->range.b.x=p[p.size()-1].x;
+			sort(p.begin(),p.end(),sort_by_y());
+			newNode->range.a.y=p[p.size()-1].y;
+			newNode->range.b.y=p[0].y;
+			cout << "KDnode Range ->";
+			newNode->range.printRange();
+			dim++;
+			if(split_lo.size()>0){
+				KDNode* lNode=new KDNode;
+				newNode->left = build(split_lo,dim);
+			}
+			if(split_hi.size()>0){
+				KDNode* rNode=new KDNode;
+				newNode->right = build(split_hi,dim);
+			}
+			return newNode;
+		}
+
 public:
 	//a public method build(P) that builds the kD-tree from a set P of (2D) points.
-
 	KDNode build(vector<Point2D> p){
-		KDNode newNode;
-		if(depth==0){
-			node=&newNode;
-		}
-		newNode.splitDimension=depth;
-		if(depth % 2 != 0){
-			sort(p.begin(),p.end(),sort_by_x());
-		}else{
-			sort(p.begin(),p.end(),sort_by_y());
-		}
-
-		//increase depth for the next node
-		depth++;
-		cout << "Cr DEPTH->" << depth << endl;
-		//Print Points in each node creation
-		for(int i=0;i<p.size();i++){
-			cout << " _" << i << "->" << "x:" << p[i].x << " y:" << p[i].y;
-		}
-		cout << endl;
-
-		if(p.size()==1){
-			newNode.leaf=true;
-			newNode.point=p[0];
-			cout << "Leaf" << endl;
-			return newNode;
-		}else{
-			newNode.leaf=false;
-		}
-
-		//AVG to split
-		int median=p.size()/2;
-
-		cout << "Arrays median:" << median << endl;
-
-		//https://stackoverflow.com/questions/9811235/best-way-to-split-a-vector-into-two-smaller-arrays
-		vector<Point2D> split_lo(p.begin(), p.begin() + median);
-		vector<Point2D> split_hi(p.begin() + median, p.end());
-		if(p.size()%2!=0){
-			split_hi.erase(split_hi.begin());
-		}
-
-		//Set Range of the bounding box, by now arranging by x and Y to get min and max on each
-		//array, this is n(log n) by quick sort
-		sort(p.begin(),p.end(),sort_by_x());
-		newNode.range.a.x=p[0].x;
-		newNode.range.b.x=p[p.size()-1].x;
-		sort(p.begin(),p.end(),sort_by_y());
-		newNode.range.a.y=p[p.size()-1].y;
-		newNode.range.b.y=p[0].y;
-
-		if(split_lo.size()>0){
-			KDNode leftNode=build(split_lo);
-			newNode.left = &leftNode;
-		}
-		if(split_hi.size()>0){
-			KDNode rightNode=build(split_hi);
-			newNode.right = &rightNode;
-		}
-		return newNode;
+		build(p,0);
 	}
 
 	//a public method search(boundingbox range) that performs a range search
@@ -218,6 +239,11 @@ public:
 				//07 ReportSubtree(root.left);
 				cout << "inside report sub tree" << endl;
 			}else{
+				cout << "Left Range->";
+				searchNode.left->range.printRange();
+				cout << "Right Range->";
+				BoundingBox bob=searchNode.right->range;
+				bob.printRange();
 				if(range.inside(searchNode.left->range)){
 					//07 ReportSubtree(root.left);
 					cout << "inside report sub tree left" << endl;
@@ -240,6 +266,10 @@ public:
 		}
 	}
 
+	KDNode getNode(){
+		return *node;
+	}
+
 	void search(BoundingBox range){
 		search(range,node);
 	}
@@ -256,6 +286,11 @@ int main() {
 	cout << "Debug_1:" << finalCommand << endl;
 	KdTree tree;
 	tree.build(pointList);
+	cout << "Range"<< endl;
+	tree.getNode().range.printRange();
+	tree.getNode().left->range.printRange();
+	tree.getNode().right->range.printRange();
+	cout << "Search"<< endl;
 	tree.search(bb);
 }
 
