@@ -1,10 +1,5 @@
-//============================================================================
-// Name        : exercise412.cpp
-// Author      : 
-// Version     :
-// Copyright   : Your copyright notice
-// Description : Hello World in C++, Ansi-style
-//============================================================================
+// Author      : Gabriel De Ioannes
+// author 	   : Sagar Nagaraj
 
 #include <iostream>
 #include <vector>
