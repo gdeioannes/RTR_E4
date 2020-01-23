@@ -193,15 +193,15 @@ private:
 			}
 
 			//increase depth for the next node
-			cout << "<-----KNODE----->";
+			//cout << "<-----KNODE----->";
 			newNode->splitDimension=dim;;
-			cout << "DEEP:" << dim << endl;
+			//cout << "DEEP:" << dim << endl;
 			dim++;
 			//Print Points in each node creation
-			for(int i=0;i<p.size();i++){
+			/*for(int i=0;i<p.size();i++){
 				cout << " _" << i << "->" << "x:" << p[i].x << " y:" << p[i].y;
 			}
-			cout << endl;
+			cout << endl;*/
 
 			//Set Range of the bounding box, by now arranging by x and Y to get min and max on each
 			//array, this is n(log n) by quick sort
@@ -226,29 +226,28 @@ private:
 				}
 			}
 
-			newNode->range.a.x=minX;
-			newNode->range.a.y=maxY;
-			newNode->range.b.x=maxX;
-			newNode->range.b.y=minY;
-
-			cout << "RANGE ------>";
-			newNode->range.printRange();
+			//cout << "RANGE ------>";
+			//newNode->range.printRange();
 			newNode->count=p.size();
 			if(p.size()==1){
 				newNode->leaf=true;
 				newNode->range.a=p[0];
 				newNode->range.b=p[0];
 				newNode->point=p[0];
-				cout << "-------------------------->Leaf :";
-				p[0].printPoint();
+				//cout << "-------------------------->Leaf :";
+				//p[0].printPoint();
 				return newNode;
 			}else{
+				newNode->range.a.x=minX;
+				newNode->range.a.y=maxY;
+				newNode->range.b.x=maxX;
+				newNode->range.b.y=minY;
 				newNode->leaf=false;
 			}
 
 			//AVG to split
 			int median=newNode->count/2;
-			cout << "MEDIAN:" << median << endl;
+			//cout << "MEDIAN:" << median << endl;
 
 			//https://stackoverflow.com/questions/9811235/best-way-to-split-a-vector-into-two-smaller-arrays
 			vector<Point2D> split_lo(p.begin(), p.begin() + median);
