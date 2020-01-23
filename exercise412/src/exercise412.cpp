@@ -8,21 +8,13 @@
 
 #include <iostream>
 #include <vector>
-#include <fstream>
 #include <sstream>
 #include <algorithm>
-#include <iostream>
 #include <fstream>
-#include <sstream>
-#include <list>
-#include <vector>
 #include <math.h>
-#include <algorithm>
 #include <iomanip>
-#include <map>
+
 using namespace std;
-
-
 
 class Point2D{
 public :
@@ -123,7 +115,6 @@ class KDNode{
 public:
 	//a flag whether it is an internal node or a leaf node.
 	bool leaf;
-	bool active=false;
 	//two pointers to its left and right children (in case it is an internal node).
 	KDNode * left;
 	KDNode * right;
@@ -143,6 +134,26 @@ public:
 		cout << fixed << std::setprecision(1) << " x->"<< point.x << " y->"<< point.y << endl;
 	}
 };
+
+int quickMedian(vector<Point2D> &p,int dim){
+	int k,i,j;
+	j=0;
+	i=-1;
+	k=p.size()/2;
+	int pivot=p.size();
+	int cutPos=0;
+	for(int w=0;w<p.size()-cutPos;w++){
+		if(p[j].x>p[pivot].x){
+			j++;
+			i++;
+		}else{
+			p[i++]=p[pivot];
+			j++;
+		}
+
+	}
+	return k;
+}
 
 class KdTree{
 private:
@@ -165,7 +176,6 @@ private:
 		return all_leafs;
 	}
 
-
 	KDNode* build(vector<Point2D> p,int dim){
 			KDNode* newNode=new KDNode;
 			if(dim==0){
@@ -180,7 +190,7 @@ private:
 
 			//increase depth for the next node
 			newNode->splitDimension=dim;
-
+			dim++;
 			//Print Points in each node creation
 			//for(int i=0;i<p.size();i++){
 			//	cout << " _" << i << "->" << "x:" << p[i].x << " y:" << p[i].y;
@@ -189,12 +199,30 @@ private:
 
 			//Set Range of the bounding box, by now arranging by x and Y to get min and max on each
 			//array, this is n(log n) by quick sort
-			sort(p.begin(),p.end(),sort_by_x());
-			newNode->range.a.x=p[0].x;
-			newNode->range.b.x=p[p.size()-1].x;
-			sort(p.begin(),p.end(),sort_by_y());
-			newNode->range.a.y=p[p.size()-1].y;
-			newNode->range.b.y=p[0].y;
+			float minX,maxX,minY,maxY;
+			minX=p[0].x;
+			maxX=p[0].y;
+			minY=p[0].x;
+			maxY=p[0].y;
+			for(int i=0;i<p.size();i++){
+				if(p[i].x<minX){
+					minX=p[i].x;
+				}
+				if(p[i].x>maxX){
+					maxX=p[i].x;
+				}
+				if(p[i].y>minY){
+					minY=p[i].y;
+				}
+				if(p[i].y>maxY){
+					maxY=p[i].y;
+				}
+			}
+
+			newNode->range.a.x=minX;
+			newNode->range.b.x=maxX;
+			newNode->range.b.y=minY;
+			newNode->range.a.y=maxY;
 			//cout << "KDnode Range ->";
 			//newNode->range.printRange();
 			//cout << "Psize" << p.size() << endl;
@@ -207,7 +235,6 @@ private:
 				newNode->leaf=false;
 			}
 
-
 			//AVG to split
 			int median=newNode->count/2;
 			//cout << "Arrays median:" << median << endl;
@@ -219,7 +246,6 @@ private:
 				split_hi.erase(split_hi.begin());
 			}
 
-			dim++;
 			if(split_lo.size()>0){
 				newNode->left = build(split_lo,dim);
 			}
@@ -231,7 +257,7 @@ private:
 
 public:
 	//a public method build(P) that builds the kD-tree from a set P of (2D) points.
-	KDNode build(vector<Point2D> p){
+	void build(vector<Point2D> p){
 		build(p,0);
 	}
 
@@ -272,7 +298,7 @@ public:
 		}
 	}
 
-	int count(BoundingBox range,KDNode* sNode){
+	void count(BoundingBox range,KDNode* sNode){
 		if(sNode->leaf){
 			if(range.contains(node->point)){
 				//cout << "Leaft" << endl;
