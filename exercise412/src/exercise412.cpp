@@ -197,7 +197,8 @@ private:
 			newNode->range.b.y=p[0].y;
 			//cout << "KDnode Range ->";
 			//newNode->range.printRange();
-
+			//cout << "Psize" << p.size() << endl;
+			newNode->count=p.size();
 			if(p.size()==1){
 				newNode->leaf=true;
 				newNode->point=p[0];
@@ -206,7 +207,7 @@ private:
 				newNode->leaf=false;
 			}
 
-			newNode->count=p.size();
+
 			//AVG to split
 			int median=newNode->count/2;
 			//cout << "Arrays median:" << median << endl;
@@ -274,26 +275,27 @@ public:
 	int count(BoundingBox range,KDNode* sNode){
 		if(sNode->leaf){
 			if(range.contains(node->point)){
-				cout << "Leaft" << endl;
+				//cout << "Leaft" << endl;
 				nodeCount+= sNode->count;
 			}
 		}else{
 			if(range.inside(sNode->range)){
-				cout << "inside count sub tree" << endl;
+				//cout << "inside count sub tree" << endl;
 				nodeCount+= sNode->count;
 			}else{
 				if(range.inside(sNode->left->range)){
-					cout << "inside count sub tree left" << endl;
+					//cout << "inside count sub tree left" << endl;
 					nodeCount+= sNode->left->count;
 				}else if (range.intersect(sNode->left->range)){
-					cout << "intersect Left" << endl;
+					//cout << "intersect Left" << endl;
 					count(range,sNode->left);
 				}
 				if(range.inside(sNode->right->range)){
-					cout << "inside count sub tree right" << endl;
+					//cout << "inside count sub tree right" << endl;
+					//cout << sNode->right->count << endl;
 					nodeCount+=sNode->right->count;
 				}else if (range.intersect(sNode->right->range)){
-					cout << "intersect right" << endl;
+					//cout << "intersect right" << endl;
 					count(range,sNode->right);
 				}
 			}
@@ -344,7 +346,6 @@ int main() {
 	}
 
 	if(finalCommand=="COUNT"){
-		cout << "Count" << endl;
 		tree.count(bb);
 		cout << fixed << setprecision(0) << tree.getNodeCount() << endl;
 	}

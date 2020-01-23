@@ -1,5 +1,1 @@
-Count
-intersect Left
-inside count sub tree right
-inside count sub tree right
-2
+0
