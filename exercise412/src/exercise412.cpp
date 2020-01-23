@@ -186,6 +186,7 @@ private:
 				node=newNode;
 			}
 
+
 			if(newNode->splitDimension % 2 == 0){
 				sort(p.begin(),p.end(),sort_by_x());
 			}else{
@@ -231,6 +232,7 @@ private:
 			newNode->range.a.y=maxY;
 			newNode->range.b.x=maxX;
 			newNode->range.b.y=minY;
+
 			//DEBUG
 			//cout << "RANGE ------>";
 			//newNode->range.printRange();
@@ -238,7 +240,7 @@ private:
 			if(p.size()==1){
 				newNode->leaf=true;
 				newNode->range.a=p[0];
-				newNode->range.a=p[0];
+				newNode->range.b=p[0];
 				newNode->point=p[0];
 				//DEBUG
 				//cout << "-------------------------->Leaf :";
@@ -249,6 +251,9 @@ private:
 			}
 
 			//AVG to split
+			//Sice the array is ordered in every node by X or Y, the median is easy found the size of
+			//the array, by default when is odd number gets round in c++, quickMedian is no nessesary in this
+			//implementation if we sort the array in very node
 			int median=newNode->count/2;
 			//DEBUG
 			//cout << "MEDIAN:" << median << endl;
