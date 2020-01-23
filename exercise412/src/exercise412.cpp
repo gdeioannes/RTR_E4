@@ -48,7 +48,11 @@ struct sort_by_y
 {
     inline bool operator() (const Point2D& struct1, const Point2D& struct2)
     {
-        return (struct1.y < struct2.y);
+    	if(struct1.y != struct2.y){
+    		return (struct1.y < struct2.y);
+    	}else{
+    		return (struct1.x < struct2.x);
+    	}
     }
 };
 
@@ -384,8 +388,10 @@ int main() {
 
 	if(finalCommand=="PRINT"){
 		tree.search(bb);
-		for(int i=0;i<tree.getAllLeafs().size();i++){
-			cout << fixed << setprecision(2) << tree.getAllLeafs()[i].x << " " << tree.getAllLeafs()[i].y << endl;
+		vector<Point2D> result=tree.getAllLeafs();
+		sort(result.begin(),result.end(),sort_by_y());
+		for(int i=0;i<result.size();i++){
+			cout << fixed << setprecision(2) << result[i].x << " " << result[i].y << endl;
 		}
 	}
 
