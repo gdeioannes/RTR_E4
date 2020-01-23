@@ -30,6 +30,10 @@ public :
 		x=0;
 		y=0;
 	}
+
+	void printPoint(){
+		cout << x << " " << y << endl;;
+	}
 };
 
 struct sort_by_x
@@ -189,16 +193,19 @@ private:
 			}
 
 			//increase depth for the next node
-			newNode->splitDimension=dim;
+			cout << "<-----KNODE----->";
+			newNode->splitDimension=dim;;
+			cout << "DEEP:" << dim << endl;
 			dim++;
 			//Print Points in each node creation
-			//for(int i=0;i<p.size();i++){
-			//	cout << " _" << i << "->" << "x:" << p[i].x << " y:" << p[i].y;
-			//}
-			//cout << endl;
+			for(int i=0;i<p.size();i++){
+				cout << " _" << i << "->" << "x:" << p[i].x << " y:" << p[i].y;
+			}
+			cout << endl;
 
 			//Set Range of the bounding box, by now arranging by x and Y to get min and max on each
 			//array, this is n(log n) by quick sort
+			//Initialize variables
 			float minX,maxX,minY,maxY;
 			minX=p[0].x;
 			maxX=p[0].y;
@@ -211,7 +218,7 @@ private:
 				if(p[i].x>maxX){
 					maxX=p[i].x;
 				}
-				if(p[i].y>minY){
+				if(p[i].y<minY){
 					minY=p[i].y;
 				}
 				if(p[i].y>maxY){
@@ -220,16 +227,20 @@ private:
 			}
 
 			newNode->range.a.x=minX;
+			newNode->range.a.y=maxY;
 			newNode->range.b.x=maxX;
 			newNode->range.b.y=minY;
-			newNode->range.a.y=maxY;
-			//cout << "KDnode Range ->";
-			//newNode->range.printRange();
-			//cout << "Psize" << p.size() << endl;
+
+			cout << "RANGE ------>";
+			newNode->range.printRange();
 			newNode->count=p.size();
 			if(p.size()==1){
 				newNode->leaf=true;
+				newNode->range.a=p[0];
+				newNode->range.b=p[0];
 				newNode->point=p[0];
+				cout << "-------------------------->Leaf :";
+				p[0].printPoint();
 				return newNode;
 			}else{
 				newNode->leaf=false;
@@ -237,14 +248,12 @@ private:
 
 			//AVG to split
 			int median=newNode->count/2;
-			//cout << "Arrays median:" << median << endl;
+			cout << "MEDIAN:" << median << endl;
 
 			//https://stackoverflow.com/questions/9811235/best-way-to-split-a-vector-into-two-smaller-arrays
 			vector<Point2D> split_lo(p.begin(), p.begin() + median);
 			vector<Point2D> split_hi(p.begin() + median, p.end());
-			if(p.size()%2!=0){
-				split_hi.erase(split_hi.begin());
-			}
+
 
 			if(split_lo.size()>0){
 				newNode->left = build(split_lo,dim);
